@@ -1,18 +1,24 @@
 const express = require('express');
 const bodyParser = require('body-parser');
-//const amqp = require('amqplib');
+const amqp = require('amqplib');
+
+var q = 'pgtasks';
 
 var app = express();
 app.use(bodyParser.json());
-
-app.post('/data', (req, res) => {
-	console.log(req.body);
-	res.end();
-});
-
-app.post('/', (req, res) => {
-	console.log('hello');
-	res.send('hello, my name is srv1');
-});
-
 app.listen('3000');
+
+var open = amqp.connect('amqp://admin:admin@rabbit.io:5672');
+open.then((conn) => {
+	return conn.createChannel();
+}).then((ch) => {
+	return ch.assertQueue(q).then((ok) => {
+		app.post('/data', (req, res) => {
+			ch.sendToQueue(q, new Buffer(JSON.stringify(req.body)));
+			console.log("Sent to queue");
+			res.end();
+		});
+	});
+}).catch(console.warn);
+
+
