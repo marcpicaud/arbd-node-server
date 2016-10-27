@@ -14,8 +14,9 @@ open.then((conn) => {
 }).then((ch) => {
 	return ch.assertQueue(q).then((ok) => {
 		app.post('/data', (req, res) => {
-			ch.sendToQueue(q, new Buffer(JSON.stringify(req.body)));
-			console.log("Sent to queue");
+			const buffer = new Buffer(JSON.stringify(req.body));
+			ch.sendToQueue(q, buffer);
+			console.log(buffer.length + " bytes sent to queue");
 			res.end();
 		});
 	});
