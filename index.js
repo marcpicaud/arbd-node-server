@@ -7,12 +7,14 @@ var q = 'pgtasks';
 var app = express();
 app.use(bodyParser.json());
 app.listen('3000');
+console.log('App is listening on port 3000...');
 
 var open = amqp.connect('amqp://admin:admin@rabbit.io:5672');
 open.then((conn) => {
 	return conn.createChannel();
 }).then((ch) => {
 	return ch.assertQueue(q).then((ok) => {
+		console.log(`App is now connected to ${q} queue`);
 		app.post('/data', (req, res) => {
 			const buffer = new Buffer(JSON.stringify(req.body));
 			ch.sendToQueue(q, buffer);
